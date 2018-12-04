@@ -28,14 +28,17 @@ def reapVillages(browser):
         villageLink.click()
         time.sleep(2)
 
-        # click on button to collect resources
-        collectResourcesButtons = browser.find_elements_by_class_name('card_click_area')
-        collectResourcesButtons[0].click()
-        numVillagesReaped += 1
-        time.sleep(1)
-        # close village window
-        browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)
-        time.sleep(1)
+        disabledBanners = browser.find_elements_by_class_name('actions_locked_banner')
+        if len(disabledBanners) > 0:
+            # click on button to collect resources
+            collectResourcesButtons = browser.find_elements_by_class_name('card_click_area')
+            collectResourcesButtons[0].click()
+            time.sleep(1)
+
+            # close village window
+            browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)
+            time.sleep(1)
+            numVillagesReaped += 1
 
 
 # logs the user in and navigates to the game world
