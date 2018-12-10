@@ -7,10 +7,13 @@ from Building import Building
 # logs in, manages the game and closes the browser
 def executeGameSession(settings):
     # setup web browser
-    browser = webdriver.Chrome('C:\\Users\\Nick\\AppData\\Local\\Programs\\chromeDriver\\chromedriver.exe',)
+    browser = webdriver.Chrome('.\\chromedriver.exe',)
     loginAndSelectWorld(browser, settings['player'])
-    manageSenate(browser, settings['buildings'])
-    reapVillages(browser)
+
+    if (settings['player']['reapVillages']):
+        reapVillages(browser)
+    if (settings['player']['manageSenate']):
+        manageSenate(browser, settings['buildings'])
 
     browser.quit()
 
@@ -21,30 +24,30 @@ def reapVillages(browser):
     goToIslandViewButton = browser.find_element_by_class_name('island_view')
     goToIslandViewButton.click()
     time.sleep(1)
-    browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)
+    pressEscape(browser)
     time.sleep(1)
 
-    numVillagesReaped = 0
     # reap all villages that are available
     while len(browser.find_elements_by_class_name('claim')) > 0:
+        pressEscape(browser)
         # open village window
         villageLink = browser.find_element_by_class_name('claim')
         actions = ActionChains(browser)
         actions.move_to_element(villageLink).click().perform()
+        time.sleep(1)
 
-        time.sleep(2)
-
-        disabledBanners = browser.find_elements_by_class_name('banner')
-        if True:
+        # make sure we're allowed to collect resources
+        if len(browser.find_element_by_class_name('pb_bpv_unlock_time').text) == 0:
             # click on button to collect resources
             collectResourcesButtons = browser.find_elements_by_class_name('card_click_area')
             collectResourcesButtons[1].click()
             time.sleep(1)
-
-            # close village window
-            browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)
+            pressEscape(browser)
             time.sleep(1)
-            numVillagesReaped += 1
+
+        # close village window
+        pressEscape(browser)
+        time.sleep(1)
 
 
 # logs the user in and navigates to the game world
@@ -73,11 +76,6 @@ def loginAndSelectWorld(browser, player):
     worldButton = browser.find_elements_by_class_name('world_name')[index]
     worldButton.find_element_by_css_selector('div').click()
     time.sleep(2)
-
-    # collect daily reward if it's there
-    dailyRewardButtons = browser.find_elements_by_class_name('resources')
-    if len(dailyRewardButtons) > 0:
-        dailyRewardButtons[0].click()
     
     # exit any pop ups
     pressEscape(browser)
@@ -128,4 +126,4 @@ def buildingArray(browser, buildingSettings):
 
 
 def pressEscape(browser):
-    browser.find_element_by_tag_name('body').click()
+    browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)
