@@ -7,9 +7,14 @@ from Building import Building
 # logs in, manages the game and closes the browser
 def executeGameSession(settings):
     # setup web browser
-    browser = webdriver.Firefox(executable_path='/home/pi/py/grepolis/geckodriver')
-    loginAndSelectWorld(browser, settings['player'])
+    exePath = settings['webDriver']["executablePath"]
+    browser = 0
+    if (settings["webDriver"]["browser"] == 'firefox'):
+        browser = webdriver.Firefox(executable_path=exePath)
+    else:
+        browser = webdriver.Chrome(exePath)
 
+    loginAndSelectWorld(browser, settings['player'])
     if (settings['player']['reapVillages']):
         reapVillages(browser)
     if (settings['player']['manageSenate']):
