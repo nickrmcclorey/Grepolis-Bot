@@ -7,7 +7,7 @@ from Building import Building
 # logs in, manages the game and closes the browser
 def executeGameSession(settings):
     # setup web browser
-    browser = webdriver.Chrome('.\\chromedriver.exe',)
+    browser = webdriver.Firefox(executable_path='/home/pi/py/grepolis/geckodriver')
     loginAndSelectWorld(browser, settings['player'])
 
     if (settings['player']['reapVillages']):
@@ -52,7 +52,7 @@ def reapVillages(browser):
 
 # logs the user in and navigates to the game world
 def loginAndSelectWorld(browser, player):
-    browser.maximize_window()
+    #browser.maximize_window()
     browser.get('https://us.grepolis.com/')
     time.sleep(2)
 
@@ -69,12 +69,13 @@ def loginAndSelectWorld(browser, player):
     #press login button
     loginButton = browser.find_element_by_id('login_Login')
     loginButton.click()
-    time.sleep(1)
+    time.sleep(10)
 
     #select world
     index = player['worldIndex']
-    worldButton = browser.find_elements_by_class_name('world_name')[index]
-    worldButton.find_element_by_css_selector('div').click()
+    worldButton = browser.find_elements_by_class_name('world_name')
+    print len(worldButton)
+    worldButton[0].find_element_by_css_selector('div').click()
     time.sleep(2)
     
     # exit any pop ups
