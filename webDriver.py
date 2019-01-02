@@ -18,7 +18,7 @@ def executeGameSession(settings):
     if (settings['player']['reapVillages']):
         reapVillages(browser)
     if (settings['player']['manageSenate']):
-        manageSenate(browser, settings['buildings'])
+        upgradgeBuildings(browser, settings['buildings'])
 
     browser.quit()
 
@@ -77,12 +77,10 @@ def loginAndSelectWorld(browser, player):
     time.sleep(10)
 
     #select world
-    index = player['worldIndex']
     worldButton = browser.find_elements_by_class_name('world_name')
-    print len(worldButton)
     worldButton[0].find_element_by_css_selector('div').click()
     time.sleep(2)
-    
+
     # exit any pop ups
     pressEscape(browser)
     time.sleep(1)
@@ -133,3 +131,23 @@ def buildingArray(browser, buildingSettings):
 
 def pressEscape(browser):
     browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)
+
+
+def upgradgeBuildings(browser, buildingSettings):
+    browser.find_element_by_class_name('city_overview').click()
+    time.sleep(1)
+    browser.find_element_by_class_name('js-tutorial-btn-construction-mode').click()
+    time.sleep(1)
+    panels = browser.find_elements_by_class_name('city_overview_overlay')
+    panels.pop(2)
+    buildings = []
+
+    for k in range(0, 12):
+        if len(panels[k].find_elements_by_class_name('disabled')) == 0:
+            buildings.append(Building(buildingSettings[k], panels[k]))
+
+    if (len(buildings) > 0):
+        # upgradge building whose furthest from goal
+        buildingToUpgrade = min(buildings, key = lambda x: x.percentToGoal())
+        buildingToUpgrade.htmlButton.click()
+        time.sleep(1)

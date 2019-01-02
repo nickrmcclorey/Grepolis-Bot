@@ -1,11 +1,17 @@
+import sys
 import time
 import json
 import random
 from datetime import datetime  
-from datetime import timedelta  
+from datetime import timedelta
 from webDriver import executeGameSession
 
-hoursToRun = float(input('How many hours do you want to run? \n'))
+hoursToRun = 0
+if len(sys.argv) > 1:
+    hoursToRun = float(sys.argv[1])
+else:
+    hoursToRun = float(input('How many hours do you want to run? \n'))
+        
 endTime = datetime.now() + timedelta(hours = hoursToRun)
 
 print('don\'t end the program while the web browser is open')
