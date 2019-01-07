@@ -1,4 +1,9 @@
 settings.json
 __pycache__/
-
 *.exe
+build/
+dist/
+*.pyc
+*.log
+geckodriver
+*.spec
