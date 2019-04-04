@@ -1,8 +1,34 @@
 import time
+import json
+import random
+from datetime import datetime  
+from datetime import timedelta
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from Building import Building
+
+def play_grepolis(hours_to_run=0.01, num_game_sessions = 0):
+            
+    endTime = datetime.now() + timedelta(hours = hours_to_run)
+
+    print('don\'t end the program while the web browser is open')
+    while (datetime.now() < endTime):
+        file = open('settings.json', 'r')
+        settings = json.loads(file.read())
+        file.close()
+
+        executeGameSession(settings)
+        secondsToWait = random.randint(60 * 20, 60 * 25)
+
+        if datetime.now() + timedelta(seconds=secondsToWait) > endTime:
+            break
+
+        print('succesfully played login session, next login in', secondsToWait / 60, ' minutes')
+        time.sleep(secondsToWait)
+
+    print('finished playing')
+
 
 # logs in, manages the game and closes the browser
 def executeGameSession(settings):
