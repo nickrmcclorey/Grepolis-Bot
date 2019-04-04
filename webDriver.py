@@ -8,17 +8,30 @@ from Building import Building
 def executeGameSession(settings):
     # setup web browser
     exePath = settings['webDriver']["executablePath"]
-    browser = 0
+    browser = None
     if (settings["webDriver"]["browser"] == 'firefox'):
         browser = webdriver.Firefox(executable_path=exePath)
     else:
         browser = webdriver.Chrome(exePath)
+    browser.fullscreen_window()
 
-    loginAndSelectWorld(browser, settings['player'])
-    if (settings['player']['reapVillages']):
-        reapVillages(browser)
-    if (settings['player']['manageSenate']):
-        upgradgeBuildings(browser, settings['buildings'])
+
+    try:
+        loginAndSelectWorld(browser, settings['player'])
+        firstCity = browser.find_element_by_class_name('town_name').text
+        currentCity = None
+
+        # cycle through all the cities and farm resources or build buildings
+        while currentCity != firstCity:
+            if (settings['player']['reapVillages']):
+                reapVillages(browser)
+            if (settings['player']['manageSenate']):
+                upgradgeBuildings(browser, settings['buildings'])
+            click(browser.find_element_by_class_name('btn_next_town'))
+            currentCity = browser.find_element_by_class_name('town_name').text
+    except:
+        browser.quit()
+        print('something went wrong')
 
     browser.quit()
 
@@ -27,10 +40,10 @@ def executeGameSession(settings):
 def reapVillages(browser):
     #go to island view
     goToIslandViewButton = browser.find_element_by_class_name('island_view')
-    goToIslandViewButton.click()
-    time.sleep(1)
+    showCurrentIslandButton = browser.find_element_by_class_name('btn_jump_to_town')
+    click(goToIslandViewButton)
+    click(showCurrentIslandButton)
     pressEscape(browser)
-    time.sleep(1)
 
     # reap all villages that are available
     while len(browser.find_elements_by_class_name('claim')) > 0:
@@ -45,21 +58,18 @@ def reapVillages(browser):
         if len(browser.find_element_by_class_name('pb_bpv_unlock_time').text) == 0:
             # click on button to collect resources
             collectResourcesButtons = browser.find_elements_by_class_name('card_click_area')
-            collectResourcesButtons[1].click()
-            time.sleep(1)
+            click(collectResourcesButtons[0])
             pressEscape(browser)
-            time.sleep(1)
 
         # close village window
         pressEscape(browser)
-        time.sleep(1)
 
 
 # logs the user in and navigates to the game world
 def loginAndSelectWorld(browser, player):
     #browser.maximize_window()
     browser.get('https://us.grepolis.com/')
-    time.sleep(2)
+    time.sleep(1)
 
     # find username and password inputs
     usernameInput = browser.find_element_by_id('login_userid')
@@ -87,52 +97,6 @@ def loginAndSelectWorld(browser, player):
     pressEscape(browser)
 
 
-def goToSenateScreen(browser):
-    # go to the city overview
-    browser.find_element_by_class_name('city_overview').click()
-    time.sleep(1)
-    
-    warCoinBox = browser.find_element_by_class_name('war_coins_box')
-    actions = ActionChains(browser)
-    actions.move_to_element(warCoinBox).move_by_offset(-440, 0).click().perform()
-    time.sleep(1)
-
-
-def manageSenate(browser, buildingSettings):
-    
-    goToSenateScreen(browser)
-    buildings = buildingArray(browser, buildingSettings)
-    if (len(buildings) > 0):
-        # upgradge building whose furthest from goal
-        buildingToUpgrade = min(buildings, key = lambda x: x.percentToGoal())
-        buildingToUpgrade.htmlButton.click()
-    
-    time.sleep(1)
-    pressEscape(browser)
-    time.sleep(0.4)
-    pressEscape(browser)
-    time.sleep(1)
-
-
-def buildingArray(browser, buildingSettings):
-    
-    allButtons = browser.find_elements_by_class_name('build_up')
-    buildings = []
-
-    k = 0
-    while k < len(buildingSettings):
-        newBuilding = Building(buildingSettings[k], allButtons[k])
-        if newBuilding.haveEnoughResources:
-            buildings.append(newBuilding)
-        k += 1
-
-    return buildings
-
-
-def pressEscape(browser):
-    browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)
-
-
 def upgradgeBuildings(browser, buildingSettings):
     browser.find_element_by_class_name('city_overview').click()
     time.sleep(1)
@@ -151,3 +115,13 @@ def upgradgeBuildings(browser, buildingSettings):
         buildingToUpgrade = min(buildings, key = lambda x: x.percentToGoal())
         buildingToUpgrade.htmlButton.click()
         time.sleep(1)
+
+
+def pressEscape(browser):
+    browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)
+    time.sleep(1)
+
+
+def click(webElement):
+    webElement.click()
+    time.sleep(1)
