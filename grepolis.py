@@ -8,26 +8,34 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from Building import Building
 
-def play_grepolis():
+def play_grepolis(flag):
     file = open('settings.json', 'r')
     settings = json.loads(file.read())
     file.close()
             
     endTime = datetime.now() + timedelta(hours = settings['player']['max_hours_to_run'])
+    remaining_cycles = settings['player']['max_sessions'] or 9999
 
     print('don\'t end the program while the web browser is open')
-    while (datetime.now() < endTime):
+    while datetime.now() < endTime and remaining_cycles > 0 and flag.get() == False:
 
         executeGameSession(settings)
+        remaining_cycles -= 1
         secondsToWait = parse_seconds(settings['player']['frequency'])
 
         if datetime.now() + timedelta(seconds=secondsToWait) > endTime:
             break
 
         print('succesfully played login session, next login in', secondsToWait / 60, ' minutes')
-        time.sleep(secondsToWait)
+        wait(secondsToWait, flag)
 
     print('finished playing')
+
+
+def wait(seconds, flag):
+    return_time = datetime.now() + timedelta(seconds=seconds)
+    while datetime.now() < return_time and flag.get() == False:
+        time.sleep(1)
 
 
 # logs in, manages the game and closes the browser
