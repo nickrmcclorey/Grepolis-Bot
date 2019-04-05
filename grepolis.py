@@ -8,18 +8,18 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from Building import Building
 
-def play_grepolis(hours_to_run=0.01, num_game_sessions = 0):
+def play_grepolis():
+    file = open('settings.json', 'r')
+    settings = json.loads(file.read())
+    file.close()
             
-    endTime = datetime.now() + timedelta(hours = hours_to_run)
+    endTime = datetime.now() + timedelta(hours = settings['player']['max_hours_to_run'])
 
     print('don\'t end the program while the web browser is open')
     while (datetime.now() < endTime):
-        file = open('settings.json', 'r')
-        settings = json.loads(file.read())
-        file.close()
 
         executeGameSession(settings)
-        secondsToWait = random.randint(60 * 20, 60 * 25)
+        secondsToWait = parse_seconds(settings['player']['frequency'])
 
         if datetime.now() + timedelta(seconds=secondsToWait) > endTime:
             break
@@ -142,6 +142,14 @@ def upgradgeBuildings(browser, buildingSettings):
         buildingToUpgrade.htmlButton.click()
         time.sleep(1)
 
+
+def parse_seconds(string):
+    minutes = 'hours' not in string
+    number_minutes = int(string.strip('minutes').strip('hours').strip(' '))
+    if minutes == False:
+        number_minutes *= 60
+
+    return random.randint(60 * number_minutes, 60 * (number_minutes + 5))
 
 def pressEscape(browser):
     browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)

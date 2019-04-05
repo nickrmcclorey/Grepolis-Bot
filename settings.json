@@ -1,0 +1,83 @@
+{
+    "webDriver": {
+        "executablePath": ".\\chromedriver.exe",
+        "browser": "chrome"
+    },
+    "player": {
+        "username": "JaredTheKing",
+        "password": "mN4muVFfAMgrIHw4dzB1",
+        "worldIndex": 0,
+        "manageSenate": false,
+        "reapVillages": true,
+        "max_hours_to_run": 0.01,
+        "max_sessions": 0,
+        "frequency": "5 minutes"
+    },
+    "buildings": [
+        {
+            "name": "senate",
+            "maxLevel": 23,
+            "levelIndex": 0
+        },
+        {
+            "name": "cave",
+            "maxLevel": 13,
+            "levelIndex": 1
+        },
+        {
+            "name": "timberCamp",
+            "maxLevel": 25,
+            "levelIndex": 2
+        },
+        {
+            "name": "quarry",
+            "maxLevel": 25,
+            "levelIndex": 3
+        },
+        {
+            "name": "silverMine",
+            "maxLevel": 25,
+            "levelIndex": 4
+        },
+        {
+            "name": "marketplace",
+            "maxLevel": 7,
+            "levelIndex": 5
+        },
+        {
+            "name": "harbor",
+            "maxLevel": 17,
+            "levelIndex": 6
+        },
+        {
+            "name": "barracks",
+            "maxLevel": 17,
+            "levelIndex": 7
+        },
+        {
+            "name": "cityWall",
+            "maxLevel": 20,
+            "levelIndex": 8
+        },
+        {
+            "name": "warehouse",
+            "maxLevel": 30,
+            "levelIndex": 9
+        },
+        {
+            "name": "farm",
+            "maxLevel": 35,
+            "levelIndex": 10
+        },
+        {
+            "name": "academy",
+            "maxLevel": 40,
+            "levelIndex": 11
+        },
+        {
+            "name": "temple",
+            "maxLevel": 10,
+            "levelIndex": 12
+        }
+    ]
+}
