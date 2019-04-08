@@ -7,10 +7,10 @@
         "username": "JaredTheKing",
         "password": "mN4muVFfAMgrIHw4dzB1",
         "worldIndex": 0,
-        "manageSenate": false,
+        "manageSenate": true,
         "reapVillages": true,
-        "max_hours_to_run": 0.01,
-        "max_sessions": 0,
+        "max_hours_to_run": 1.0,
+        "max_sessions": 2,
         "frequency": "5 minutes"
     },
     "buildings": [

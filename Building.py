@@ -1,10 +1,15 @@
 class Building:
     
-    def __init__(self, json, panel):
+    def __init__(self, json, htmlButton):
         self.name = json['name']
         self.maxLevel = json['maxLevel']
-        self.htmlButton = panel.find_element_by_class_name('btn_build')
-        self.level = int(panel.find_elements_by_css_selector('span')[2].text)
+        self.htmlButton = htmlButton
+        buttonText = htmlButton.text
+        if buttonText.lower() == 'not possible':
+            self.haveEnoughResources = False
+        else:
+            self.haveEnoughResources = True
+            self.level = int(htmlButton.text.replace('Expansion to ', '').replace('Build', '0'))
 
     def percentToGoal(self):
         return self.level / self.maxLevel

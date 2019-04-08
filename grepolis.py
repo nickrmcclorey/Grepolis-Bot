@@ -12,7 +12,7 @@ def play_grepolis(flag):
     file = open('settings.json', 'r')
     settings = json.loads(file.read())
     file.close()
-            
+  
     endTime = datetime.now() + timedelta(hours = settings['player']['max_hours_to_run'])
     remaining_cycles = settings['player']['max_sessions'] or 9999
 
@@ -20,10 +20,10 @@ def play_grepolis(flag):
     while datetime.now() < endTime and remaining_cycles > 0 and flag.get() == False:
 
         executeGameSession(settings)
+
         remaining_cycles -= 1
         secondsToWait = parse_seconds(settings['player']['frequency'])
-
-        if datetime.now() + timedelta(seconds=secondsToWait) > endTime:
+        if datetime.now() + timedelta(seconds=secondsToWait) > endTime or remaining_cycles <= 0:
             break
 
         print('succesfully played login session, next login in', secondsToWait / 60, ' minutes')
@@ -47,7 +47,7 @@ def executeGameSession(settings):
         browser = webdriver.Firefox(executable_path=exePath)
     else:
         browser = webdriver.Chrome(exePath)
-    browser.fullscreen_window()
+    browser.maximize_window()
 
 
     try:
@@ -63,7 +63,8 @@ def executeGameSession(settings):
                 upgradgeBuildings(browser, settings['buildings'])
             click(browser.find_element_by_class_name('btn_next_town'))
             currentCity = browser.find_element_by_class_name('town_name').text
-    except:
+    except Exception as e:
+        print(e)
         browser.quit()
         print('something went wrong')
 
@@ -118,7 +119,7 @@ def loginAndSelectWorld(browser, player):
     #press login button
     loginButton = browser.find_element_by_id('login_Login')
     loginButton.click()
-    time.sleep(10)
+    time.sleep(5)
 
     #select world
     worldButton = browser.find_elements_by_class_name('world_name')
@@ -132,23 +133,25 @@ def loginAndSelectWorld(browser, player):
 
 
 def upgradgeBuildings(browser, buildingSettings):
-    browser.find_element_by_class_name('city_overview').click()
-    time.sleep(1)
-    browser.find_element_by_class_name('js-tutorial-btn-construction-mode').click()
-    time.sleep(1)
-    panels = browser.find_elements_by_class_name('city_overview_overlay')
-    panels.pop(2)
-    buildings = []
+    click(browser.find_element_by_class_name('city_overview'))
+    click(browser.find_element_by_id('building_main_area_main'))
+    manageSenate(browser, buildingSettings)
+    # print('success')
+    # browser.find_element_by_class_name('js-tutorial-btn-construction-mode').click()
+    # time.sleep(1)
+    # panels = browser.find_elements_by_class_name('city_overview_overlay')
+    # panels.pop(2)
+    # buildings = []
 
-    for k in range(0, 12):
-        if len(panels[k].find_elements_by_class_name('disabled')) == 0:
-            buildings.append(Building(buildingSettings[k], panels[k]))
+    # for k in range(0, 12):
+    #     if len(panels[k].find_elements_by_class_name('disabled')) == 0:
+    #         buildings.append(Building(buildingSettings[k], panels[k]))
 
-    if (len(buildings) > 0):
-        # upgradge building whose furthest from goal
-        buildingToUpgrade = min(buildings, key = lambda x: x.percentToGoal())
-        buildingToUpgrade.htmlButton.click()
-        time.sleep(1)
+    # if (len(buildings) > 0):
+    #     # upgradge building whose furthest from goal
+    #     buildingToUpgrade = min(buildings, key = lambda x: x.percentToGoal())
+    #     buildingToUpgrade.htmlButton.click()
+    #     time.sleep(1)
 
 
 def parse_seconds(string):
@@ -167,3 +170,32 @@ def pressEscape(browser):
 def click(webElement):
     webElement.click()
     time.sleep(1)
+
+def manageSenate(browser, buildingSettings):
+    
+    buildings = buildingArray(browser, buildingSettings)
+    if (len(buildings) > 0):
+        # upgradge building whose furthest from goal
+        buildingToUpgrade = min(buildings, key = lambda x: x.percentToGoal())
+        buildingToUpgrade.htmlButton.click()
+    
+    time.sleep(1)
+    pressEscape(browser)
+    time.sleep(0.4)
+    pressEscape(browser)
+    time.sleep(1)
+
+
+def buildingArray(browser, buildingSettings):
+    
+    allButtons = browser.find_elements_by_class_name('build_up')
+    buildings = []
+
+    k = 0
+    while k < len(buildingSettings):
+        newBuilding = Building(buildingSettings[k], allButtons[k])
+        if newBuilding.haveEnoughResources:
+            buildings.append(newBuilding)
+        k += 1
+
+    return buildings
