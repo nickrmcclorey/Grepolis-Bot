@@ -12,17 +12,20 @@ class grepolis_gui:
         self.settings_frame = Frame(self.root)
         self.control_frame = Frame(self.root)
         self.settings = load_settings()
+        self.cancel_flag = BooleanVar(self.root)
+        self.farming_thread = threading.Thread(target=lambda: play_grepolis(self.cancel_flag, self.set_message_board, self.show_settings_frame))
 
         self.root.geometry('500x300')
         self.root.title('Grepolis Farming Bot')
         self.setup_settings_frame(self.settings_frame)
+        self.setup_control_frame(self.control_frame)
+        self.settings_frame.grid(column=1, pady=10)
+        for k in range(3):
+            self.root.columnconfigure(k, weight=1)
 
 
     def setup_settings_frame(self, frame):
         manager = Grid_manager(frame)
-
-        self.cancel_flag = BooleanVar(frame)
-        self.cancel_flag.set(False)
 
         # username label and input
         manager.insert(Label(frame, text="username"))
@@ -83,29 +86,35 @@ class grepolis_gui:
         run_button = Button(frame, text="    run    ")
         run_button.bind('<Button-1>', self.run_button_callback)
         manager.insert(run_button)
-        
-        cancel_button = Button(frame, text="    cancel    ")
-        cancel_button.bind('<Button-1>', self.cancel_button_callback)
-        manager.insert(cancel_button, nextSpot=False, stick='E')
-
-        frame.grid(column=1, pady=10)
-        for k in range(3):
-            self.root.columnconfigure(k, weight=1)
 
 
     def setup_control_frame(self, frame):
-        # frame.grid()
-        print('cool')
+        cancel_button = Button(frame, text="    cancel    ")
+        cancel_button.bind('<Button-1>', self.cancel_button_callback)
+        cancel_button.grid(row=0, column=0, padx=10, pady=10, stick='W')
+        self.message_board = Label(frame, text="Message Board")
+        self.message_board.grid(row=0, column=1, padx=(30, 10), pady=10)
+        
+    def show_settings_frame(self):
+        self.control_frame.grid_remove()
+        self.settings_frame.grid()
+
+    def set_message_board(self, text):
+        self.message_board.config(text=text)
+
 
     def cancel_button_callback(self, e):
         self.cancel_flag.set(True)
+        self.message_board.grid(row=1, column=1)
+        Label(self.control_frame, text='Ending game session...').grid(row=0, column=1)
 
 
     def run_button_callback(self, e):
         self.save_settings()
         self.cancel_flag.set(False)
-        self.farming_thread = threading.Thread(target=lambda: play_grepolis(self.cancel_flag))
         self.farming_thread.start()
+        self.settings_frame.grid_remove()
+        self.control_frame.grid(column=0, stick="W")
 
 
     def save_settings(self):
@@ -122,6 +131,7 @@ class grepolis_gui:
 
         outfile = open('settings.json', 'w')
         outfile.write(json.dumps(self.settings, indent=4))
+    
 
 def load_settings():
     file = open('settings.json', 'r')

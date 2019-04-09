@@ -8,7 +8,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from Building import Building
 
-def play_grepolis(flag):
+def play_grepolis(flag, update_function, finish_function):
+    update_function('Loading Settings')
     file = open('settings.json', 'r')
     settings = json.loads(file.read())
     file.close()
@@ -19,17 +20,19 @@ def play_grepolis(flag):
     print('don\'t end the program while the web browser is open')
     while datetime.now() < endTime and remaining_cycles > 0 and flag.get() == False:
 
-        executeGameSession(settings)
+        executeGameSession(settings, update_function)
 
         remaining_cycles -= 1
         secondsToWait = parse_seconds(settings['player']['frequency'])
-        if datetime.now() + timedelta(seconds=secondsToWait) > endTime or remaining_cycles <= 0:
+        next_session = datetime.now() + timedelta(seconds=secondsToWait)
+        if next_session > endTime or remaining_cycles <= 0 or flag.get():
             break
 
-        print('succesfully played login session, next login in', secondsToWait / 60, ' minutes')
+        update_function('succesfully played game session, next login scheduled for ' + str(next_session.hour) + ':' + str(next_session.minute))
         wait(secondsToWait, flag)
 
-    print('finished playing')
+    update_function('finished playing')
+    finish_function()
 
 
 def wait(seconds, flag):
@@ -39,7 +42,7 @@ def wait(seconds, flag):
 
 
 # logs in, manages the game and closes the browser
-def executeGameSession(settings):
+def executeGameSession(settings, update_function):
     # setup web browser
     exePath = settings['webDriver']["executablePath"]
     browser = None
@@ -51,18 +54,21 @@ def executeGameSession(settings):
 
 
     try:
+        update_function('Navigating to Grepolis webiste')
         loginAndSelectWorld(browser, settings['player'])
         firstCity = browser.find_element_by_class_name('town_name').text
         currentCity = None
 
         # cycle through all the cities and farm resources or build buildings
         while currentCity != firstCity:
+            currentCity = browser.find_element_by_class_name('town_name').text
             if (settings['player']['reapVillages']):
+                update_function('Farming resources from villages for ' + currentCity)
                 reapVillages(browser)
             if (settings['player']['manageSenate']):
+                update_function('Upgrading buildings in ' + currentCity)
                 upgradgeBuildings(browser, settings['buildings'])
             click(browser.find_element_by_class_name('btn_next_town'))
-            currentCity = browser.find_element_by_class_name('town_name').text
     except Exception as e:
         print(e)
         browser.quit()
@@ -136,22 +142,6 @@ def upgradgeBuildings(browser, buildingSettings):
     click(browser.find_element_by_class_name('city_overview'))
     click(browser.find_element_by_id('building_main_area_main'))
     manageSenate(browser, buildingSettings)
-    # print('success')
-    # browser.find_element_by_class_name('js-tutorial-btn-construction-mode').click()
-    # time.sleep(1)
-    # panels = browser.find_elements_by_class_name('city_overview_overlay')
-    # panels.pop(2)
-    # buildings = []
-
-    # for k in range(0, 12):
-    #     if len(panels[k].find_elements_by_class_name('disabled')) == 0:
-    #         buildings.append(Building(buildingSettings[k], panels[k]))
-
-    # if (len(buildings) > 0):
-    #     # upgradge building whose furthest from goal
-    #     buildingToUpgrade = min(buildings, key = lambda x: x.percentToGoal())
-    #     buildingToUpgrade.htmlButton.click()
-    #     time.sleep(1)
 
 
 def parse_seconds(string):
