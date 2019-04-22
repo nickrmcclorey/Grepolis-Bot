@@ -6,6 +6,8 @@ from datetime import timedelta
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.options import Options as Chrome_options
 from Building import Building
 
 def play_grepolis(flag, update_function, finish_function):
@@ -20,7 +22,7 @@ def play_grepolis(flag, update_function, finish_function):
     print('don\'t end the program while the web browser is open')
     while datetime.now() < endTime and remaining_cycles > 0 and flag.get() == False:
 
-        executeGameSession(settings, update_function)
+        executeGameSession(settings, flag, update_function)
 
         remaining_cycles -= 1
         secondsToWait = parse_seconds(settings['player']['frequency'])
@@ -28,7 +30,7 @@ def play_grepolis(flag, update_function, finish_function):
         if next_session > endTime or remaining_cycles <= 0 or flag.get():
             break
 
-        update_function('succesfully played game session, next login scheduled for ' + str(next_session.hour) + ':' + str(next_session.minute))
+        update_function('Game session complete. Next login scheduled for ' + str(next_session.hour) + ':' + str(next_session.minute) + '.')
         wait(secondsToWait, flag)
 
     update_function('finished playing')
@@ -42,19 +44,24 @@ def wait(seconds, flag):
 
 
 # logs in, manages the game and closes the browser
-def executeGameSession(settings, update_function):
+def executeGameSession(settings, flag, update_function):
+
     # setup web browser
     exePath = settings['webDriver']["executablePath"]
     browser = None
     if (settings["webDriver"]["browser"] == 'firefox'):
+        options = Options()
+        options.headless = True
         browser = webdriver.Firefox(executable_path=exePath)
     else:
+        options = Chrome_options()
+        options.add_argument('--headless')
         browser = webdriver.Chrome(exePath)
     browser.maximize_window()
 
 
     try:
-        update_function('Navigating to Grepolis webiste')
+        update_function('Logging in')
         loginAndSelectWorld(browser, settings['player'])
         firstCity = browser.find_element_by_class_name('town_name').text
         currentCity = None
@@ -62,17 +69,20 @@ def executeGameSession(settings, update_function):
         # cycle through all the cities and farm resources or build buildings
         while currentCity != firstCity:
             currentCity = browser.find_element_by_class_name('town_name').text
-            if (settings['player']['reapVillages']):
+            if (settings['player']['reapVillages'] and not flag.get()):
                 update_function('Farming resources from villages for ' + currentCity)
                 reapVillages(browser)
-            if (settings['player']['manageSenate']):
+
+            if (settings['player']['manageSenate'] and not flag.get()):
                 update_function('Upgrading buildings in ' + currentCity)
                 upgradgeBuildings(browser, settings['buildings'])
+
             click(browser.find_element_by_class_name('btn_next_town'))
+
     except Exception as e:
         print(e)
         browser.quit()
-        print('something went wrong')
+        update_function('Something went wrong')
 
     browser.quit()
 
@@ -81,9 +91,10 @@ def executeGameSession(settings, update_function):
 def reapVillages(browser):
     #go to island view
     goToIslandViewButton = browser.find_element_by_class_name('island_view')
-    showCurrentIslandButton = browser.find_element_by_class_name('btn_jump_to_town')
     click(goToIslandViewButton)
-    click(showCurrentIslandButton)
+    showCurrentIslandButton = browser.find_element_by_class_name('btn_jump_to_town')
+    ac = ActionChains(browser)
+    ac.move_to_element(showCurrentIslandButton).move_by_offset(0, 0).click().perform()
     pressEscape(browser)
 
     # reap all villages that are available
