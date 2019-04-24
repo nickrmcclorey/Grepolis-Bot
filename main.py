@@ -18,6 +18,7 @@ class grepolis_gui:
 
         self.root.geometry('500x300')
         self.root.title('Grepolis Farming Bot')
+        self.root.iconbitmap('.\\uc_claw.ico')
         self.setup_settings_frame(self.settings_frame)
         self.setup_control_frame(self.control_frame)
         self.settings_frame.grid(column=1, pady=10)
