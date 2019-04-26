@@ -1,6 +1,5 @@
 import time
 import json
-import random
 from datetime import datetime  
 from datetime import timedelta
 from selenium import webdriver
@@ -30,7 +29,8 @@ def play_grepolis(flag, update_function, finish_function):
         if next_session > endTime or remaining_cycles <= 0 or flag.get():
             break
 
-        update_function('Game session complete. Next login scheduled for ' + str(next_session.hour) + ':' + str(next_session.minute) + '.')
+        minute = '0' + str(next_session.minute) if next_session.minute < 10 else str(next_session.minute)
+        update_function('Game session complete. Next login scheduled for ' + str(next_session.hour) + ':' + minute + '.')
         wait(secondsToWait, flag)
 
     update_function('finished playing')
@@ -48,18 +48,15 @@ def executeGameSession(settings, flag, update_function):
 
     # setup web browser
     exePath = settings['webDriver']["executablePath"]
-    browser = None
-    if (settings["webDriver"]["browser"] == 'firefox'):
-        options = Options()
-        options.headless = True
-        browser = webdriver.Firefox(executable_path=exePath)
-    else:
-        options = Chrome_options()
-        options.add_argument('--headless')
+    try:
         browser = webdriver.Chrome(exePath)
+    except Exception as e:
+        print(e)
+        update_function('failed to start webdriver')
+        flag.set(True)
+        return
+
     browser.maximize_window()
-
-
     try:
         update_function('Logging in')
         loginAndSelectWorld(browser, settings['player'])
@@ -161,7 +158,7 @@ def parse_seconds(string):
     if minutes == False:
         number_minutes *= 60
 
-    return random.randint(60 * number_minutes, 60 * (number_minutes + 5))
+    return 60 * number_minutes
 
 def pressEscape(browser):
     browser.find_element_by_tag_name('body').send_keys(Keys.ESCAPE)

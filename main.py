@@ -6,7 +6,7 @@ import threading
 
 
 # class that sets up and handles the GUI
-class grepolis_gui:
+class Grepolis_gui:
 
     def __init__(self):
 
@@ -61,6 +61,12 @@ class grepolis_gui:
         self.max_sessions = tk.Entry(frame, width=30, name='max_sessions')
         self.max_sessions.insert(0, self.settings['player']['max_sessions'])
         manager.insert(self.max_sessions)
+        manager.new_row()
+
+        manager.insert(tk.Label(frame, text="webdriver path"))
+        self.webdriver_path = tk.Entry(frame, width=30)
+        self.webdriver_path.insert(0, self.settings['webDriver']['executablePath'])
+        manager.insert(self.webdriver_path)
         manager.new_row()
 
         # frequency label and selector
@@ -132,6 +138,7 @@ class grepolis_gui:
         self.settings['player']['manageSenate'] = self.upgrade_buildings.get()
         self.settings['player']['reapVillages'] = self.reap_villages.get()
         self.settings['player']['frequency'] = self.frequency.get()
+        self.settings['webDriver']['executablePath'] = self.webdriver_path.get()
         self.settings['player']['password'] = ''
 
         if self.rem_pass:
@@ -148,5 +155,5 @@ def load_settings():
     return settings
 
 if __name__ == '__main__':
-    gui = grepolis_gui()
+    gui = Grepolis_gui()
     gui.root.mainloop()

@@ -1,6 +1,6 @@
 {
     "webDriver": {
-        "executablePath": ".\\chromedriver.exe",
+        "executablePath": "./chromedriver.exe",
         "browser": "chrome"
     },
     "player": {
@@ -10,7 +10,7 @@
         "manageSenate": true,
         "reapVillages": true,
         "max_hours_to_run": 1.0,
-        "max_sessions": 2,
+        "max_sessions": 1,
         "frequency": "5 minutes"
     },
     "buildings": [
